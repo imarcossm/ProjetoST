@@ -17,8 +17,8 @@ public class PedidoController {
         this.service = service;
     }
 
-   @PostMapping
-   public Pedido salvar(@RequestBody Pedido pedido) {
+    @PostMapping
+    public Pedido salvar(@RequestBody Pedido pedido) {
        return service.salvar(pedido);
    }
 
