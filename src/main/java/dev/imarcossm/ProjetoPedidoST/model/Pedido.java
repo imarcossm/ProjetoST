@@ -47,6 +47,12 @@ public class Pedido {
 
     public void setItens(List<ItemPedido> itens) {
         this.itens = itens;
+
+        if (itens != null) {
+            for (ItemPedido item : itens) {
+                item.setPedido(this);
+            }
+        }
     }
 
     public LocalDate getDataPedido() {

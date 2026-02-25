@@ -79,13 +79,15 @@ public class ItemPedido {
     }
 
     public BigDecimal getSubtotal() {
-        BigDecimal preco = valor != null ? valor : BigDecimal.ZERO;
-        BigDecimal qtd = BigDecimal.valueOf(quantidade != null ? quantidade : 0);
 
-        BigDecimal subtotal = preco.multiply(qtd);
+        BigDecimal subtotal = valor.multiply(BigDecimal.valueOf(quantidade));
 
         if (desconto != null) {
             subtotal = subtotal.subtract(desconto);
+        }
+
+        if (subtotal.compareTo(BigDecimal.ZERO) < 0) {
+            return BigDecimal.ZERO;
         }
 
         return subtotal;

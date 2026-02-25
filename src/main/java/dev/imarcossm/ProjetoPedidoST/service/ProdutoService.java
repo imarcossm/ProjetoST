@@ -3,8 +3,8 @@ package dev.imarcossm.ProjetoPedidoST.service;
 import dev.imarcossm.ProjetoPedidoST.model.Produto;
 import dev.imarcossm.ProjetoPedidoST.repository.ProdutoRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class ProdutoService {
@@ -19,8 +19,8 @@ public class ProdutoService {
         return repository.save(produto);
     }
 
-    public List<Produto> listarTodos() {
-        return repository.findAll();
+    public Page<Produto> listarTodos(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
     public Produto buscarPeloId(Integer id) {

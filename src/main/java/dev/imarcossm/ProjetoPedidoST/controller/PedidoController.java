@@ -3,8 +3,8 @@ package dev.imarcossm.ProjetoPedidoST.controller;
 import dev.imarcossm.ProjetoPedidoST.model.Pedido;
 import dev.imarcossm.ProjetoPedidoST.service.PedidoService;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/pedidos")
@@ -23,8 +23,8 @@ public class PedidoController {
    }
 
     @GetMapping
-    public List<Pedido> listar() {
-        return service.listarTodos();
+    public Page<Pedido> listar(Pageable pageable) {
+        return service.listarTodos(pageable);
     }
 
     @GetMapping("/{id}")

@@ -2,13 +2,12 @@ package dev.imarcossm.ProjetoPedidoST.controller;
 
 import dev.imarcossm.ProjetoPedidoST.model.Cliente;
 import dev.imarcossm.ProjetoPedidoST.service.ClienteService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/clientes")
-
 public class ClienteController {
 
     private final ClienteService service;
@@ -23,17 +22,18 @@ public class ClienteController {
     }
 
     @GetMapping
-    public List<Cliente> listar() {
-        return service.listarTodos();
+    public Page<Cliente> listar(Pageable pageable) {
+        return service.listarTodos(pageable);
     }
 
     @GetMapping("/{id}")
-    public Cliente buscarPeloId(@PathVariable Integer id) {
+    public Cliente buscar(@PathVariable Integer id) {
         return service.buscarPeloId(id);
     }
 
     @PutMapping("/{id}")
-    public Cliente atualizar(@PathVariable Integer id, @RequestBody Cliente cliente) {
+    public Cliente atualizar(@PathVariable Integer id,
+                             @RequestBody Cliente cliente) {
         return service.atualizar(id, cliente);
     }
 

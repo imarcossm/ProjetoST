@@ -2,16 +2,16 @@ package dev.imarcossm.ProjetoPedidoST.service;
 
 import dev.imarcossm.ProjetoPedidoST.model.Pedido;
 import dev.imarcossm.ProjetoPedidoST.repository.PedidoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class PedidoService {
 
     private final PedidoRepository repository;
 
-    public PedidoService(PedidoRepository repository){
+    public PedidoService(PedidoRepository repository) {
         this.repository = repository;
     }
 
@@ -19,8 +19,8 @@ public class PedidoService {
         return repository.save(pedido);
     }
 
-    public List<Pedido> listarTodos() {
-        return repository.findAll();
+    public Page<Pedido> listarTodos(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
     public Pedido buscarPeloId(Integer id) {
@@ -29,12 +29,9 @@ public class PedidoService {
     }
 
     public Pedido atualizar(Integer id, Pedido pedidoAtualizado) {
-
         Pedido pedido = buscarPeloId(id);
-
         pedido.setCliente(pedidoAtualizado.getCliente());
         pedido.setDataPedido(pedidoAtualizado.getDataPedido());
-
         return repository.save(pedido);
     }
 
