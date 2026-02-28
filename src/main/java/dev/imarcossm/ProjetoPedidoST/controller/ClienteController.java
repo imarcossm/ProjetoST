@@ -1,9 +1,13 @@
 package dev.imarcossm.ProjetoPedidoST.controller;
 
-import dev.imarcossm.ProjetoPedidoST.model.Cliente;
+import dev.imarcossm.ProjetoPedidoST.dto.ClienteRequestDTO;
+import dev.imarcossm.ProjetoPedidoST.dto.ClienteResponseDTO;
 import dev.imarcossm.ProjetoPedidoST.service.ClienteService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,28 +21,37 @@ public class ClienteController {
     }
 
     @PostMapping
-    public Cliente salvar(@RequestBody Cliente cliente) {
-        return service.salvar(cliente);
+    public ResponseEntity<ClienteResponseDTO> salvar(@Valid @RequestBody ClienteRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.salvar(dto));
     }
 
     @GetMapping
-    public Page<Cliente> listar(Pageable pageable) {
-        return service.listarTodos(pageable);
+    public ResponseEntity<Page<ClienteResponseDTO>> listar(Pageable pageable) {
+        return ResponseEntity.ok(service.listarTodos(pageable));
     }
 
     @GetMapping("/{id}")
-    public Cliente buscar(@PathVariable Integer id) {
-        return service.buscarPeloId(id);
+    public ResponseEntity<ClienteResponseDTO> buscarPeloId(@PathVariable Integer id) {
+        return ResponseEntity.ok(service.buscarPeloId(id));
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<Page<ClienteResponseDTO>> buscarPorNome(
+            @RequestParam String nome,
+            Pageable pageable) {
+        return ResponseEntity.ok(service.buscarPorNome(nome, pageable));
     }
 
     @PutMapping("/{id}")
-    public Cliente atualizar(@PathVariable Integer id,
-                             @RequestBody Cliente cliente) {
-        return service.atualizar(id, cliente);
+    public ResponseEntity<ClienteResponseDTO> atualizar(
+            @PathVariable Integer id,
+            @Valid @RequestBody ClienteRequestDTO dto) {
+        return ResponseEntity.ok(service.atualizar(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Integer id) {
+    public ResponseEntity<Void> deletar(@PathVariable Integer id) {
         service.deletar(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,9 +1,6 @@
 package dev.imarcossm.ProjetoPedidoST.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
@@ -15,16 +12,12 @@ public class Cliente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotBlank(message = "Nome é obrigatório")
     @Column(nullable = false, length = 100)
     private String nome;
 
-    @NotBlank(message = "Email é obrigatório")
-    @Email(message = "Email inválido")
     @Column(nullable = false, length = 100)
     private String email;
 
-    @NotNull(message = "Data de cadastro é obrigatória")
     @Column(name = "data_cadastro", nullable = false)
     private LocalDate dataCadastro;
 

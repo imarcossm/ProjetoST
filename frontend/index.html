@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Pedidos</title>
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3a0ca3;
+            --secondary: #7209b7;
+            --success: #2ec4b6;
+            --success-hover: #219ebc;
+            --danger: #e63946;
+            --danger-hover: #d90429;
+            --dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-blur: blur(16px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* animated background blobs */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(100px);
+            opacity: 0.15;
+            animation: float 20s infinite alternate ease-in-out;
+        }
+        
+        body::before {
+            background: var(--primary);
+            top: -200px;
+            left: -200px;
+        }
+        
+        body::after {
+            background: var(--secondary);
+            bottom: -200px;
+            right: -200px;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(100px, 50px); }
+            100% { transform: translate(-50px, 150px); }
+        }
+
+        header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: var(--glass-blur);
+            padding: 1.5rem 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(to right, #4cc9f0, #4361ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        header span {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            border-left: 2px solid var(--border);
+            padding-left: 1.5rem;
+        }
+
+        nav {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: var(--glass-blur);
+            padding: 0 2.5rem;
+            display: flex;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 1.2rem 1.5rem;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        nav button::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+            border-radius: 3px 3px 0 0;
+        }
+
+        nav button:hover {
+            color: var(--text-main);
+        }
+
+        nav button:hover::after {
+            width: 50%;
+        }
+
+        nav button.active {
+            color: #fff;
+        }
+
+        nav button.active::after {
+            width: 100%;
+        }
+
+        main {
+            padding: 2.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1.5rem;
+            }
+            header span {
+                border-left: none;
+                padding-left: 0;
+            }
+            nav {
+                padding: 0 1rem;
+                overflow-x: auto;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            color: #fff;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card h2::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-main);
+            padding: 0.8rem 1rem;
+            font-size: 0.95rem;
+            margin-bottom: 1.2rem;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        button.btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.8rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        button.btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.4);
+        }
+
+        button.btn:active {
+            transform: translateY(1px);
+        }
+
+        button.btn.secondary {
+            background: rgba(71, 85, 105, 0.8);
+            box-shadow: none;
+        }
+
+        button.btn.secondary:hover {
+            background: #475569;
+        }
+
+        button.btn.danger {
+            background: var(--danger);
+            box-shadow: 0 4px 10px rgba(230, 57, 70, 0.3);
+        }
+
+        button.btn.danger:hover {
+            background: var(--danger-hover);
+            box-shadow: 0 6px 15px rgba(230, 57, 70, 0.4);
+        }
+
+        button.btn.success {
+            background: var(--success);
+            box-shadow: 0 4px 10px rgba(46, 196, 182, 0.3);
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.05rem;
+            margin-top: 0.5rem;
+        }
+
+        button.btn.success:hover {
+            background: var(--success-hover);
+            box-shadow: 0 6px 15px rgba(46, 196, 182, 0.4);
+        }
+
+        .results {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+            max-height: 450px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+        }
+        
+        .results::-webkit-scrollbar {
+            width: 8px;
+        }
+        .results::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+        .results::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+        }
+
+        .result-item {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.2rem;
+            margin-bottom: 0.8rem;
+            transition: transform 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--primary);
+            opacity: 0.7;
+        }
+
+        .result-item:hover {
+            transform: translateX(5px);
+            background: rgba(40, 50, 70, 0.9);
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-item strong {
+            color: #e2e8f0;
+            font-size: 1.05rem;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+
+        .tag {
+            display: inline-block;
+            background: rgba(67, 97, 238, 0.15);
+            color: #a3bffa;
+            border: 1px solid rgba(67, 97, 238, 0.3);
+            border-radius: 20px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-right: 0.4rem;
+            margin-top: 0.4rem;
+        }
+
+        .tag.green {
+            background: rgba(46, 196, 182, 0.15);
+            color: #8ce8df;
+            border-color: rgba(46, 196, 182, 0.3);
+        }
+
+        .tag.yellow {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fcd34d;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .empty {
+            color: var(--text-muted);
+            font-style: italic;
+            text-align: center;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .empty::before {
+            content: '🔍';
+            font-size: 2rem;
+            opacity: 0.5;
+            filter: grayscale(1);
+        }
+
+        .total-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--success), #10b981);
+            color: #fff;
+            border-radius: 20px;
+            padding: 0.5rem 1.2rem;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .item-row {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            flex-wrap: nowrap;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 0.8rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .item-row input {
+            margin-bottom: 0;
+            flex: 1;
+            min-width: 80px;
+            background: rgba(30, 41, 59, 0.6);
+            padding: 0.6rem 0.8rem;
+        }
+
+        .item-row button {
+            flex-shrink: 0;
+            padding: 0.6rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        #items-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .msg {
+            padding: 0.8rem 1.2rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            animation: slideDown 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg.success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .msg.success::before {
+            content: '✓';
+            font-weight: bold;
+        }
+
+        .msg.error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .msg.error::before {
+            content: '⚠';
+            font-weight: bold;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .search-row input {
+            margin-bottom: 0;
+            flex: 1;
+        }
+        
+        .search-row button {
+            margin-top: 0;
+            white-space: nowrap;
+        }
+        
+        /* Typography imports */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+</head>
+
+<body>
+
+    <header>
+        <h1>&#128230; Sistema de Pedidos</h1>
+        <span>Gerenciamento de Clientes, Produtos e Pedidos</span>
+    </header>
+
+    <nav>
+        <button class="active" onclick="showSection('clientes')">Clientes</button>
+        <button onclick="showSection('produtos')">Produtos</button>
+        <button onclick="showSection('pedidos')">Pedidos</button>
+        <button onclick="showSection('consultas')">Consultas</button>
+    </nav>
+
+    <main>
+
+
+        <div id="clientes" class="section active">
+            <div class="grid">
+                <div class="card">
+                    <h2>Cadastrar Cliente</h2>
+                    <div id="cliente-msg"></div>
+                    <label>Nome</label>
+                    <input id="c-nome" type="text" placeholder="Nome completo">
+                    <label>E-mail</label>
+                    <input id="c-email" type="email" placeholder="email@exemplo.com">
+                    <label>Data de Cadastro</label>
+                    <input id="c-data" type="date">
+                    <button class="btn success" onclick="salvarCliente()">Cadastrar</button>
+                </div>
+                <div class="card">
+                    <h2>Buscar Clientes</h2>
+                    <div class="search-row">
+                        <input id="c-busca" type="text" placeholder="Buscar por nome...">
+                        <button class="btn" onclick="buscarClientes()">Buscar</button>
+                        <button class="btn secondary" onclick="listarClientes()">Listar Todos</button>
+                    </div>
+                    <div id="clientes-result" class="results">
+                        <div class="empty">Nenhum resultado.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="produtos" class="section">
+            <div class="grid">
+                <div class="card">
+                    <h2>Cadastrar Produto</h2>
+                    <div id="produto-msg"></div>
+                    <label>Nome / Descrição</label>
+                    <input id="p-nome" type="text" placeholder="Descrição do produto">
+                    <label>Valor (R$)</label>
+                    <input id="p-valor" type="number" min="0.01" step="0.01" placeholder="0.00">
+                    <label>Quantidade em Estoque</label>
+                    <input id="p-estoque" type="number" min="0" placeholder="0">
+                    <label>Data de Cadastro</label>
+                    <input id="p-data" type="date">
+                    <button class="btn success" onclick="salvarProduto()">Cadastrar</button>
+                </div>
+                <div class="card">
+                    <h2>Buscar Produtos</h2>
+                    <div class="search-row">
+                        <input id="p-busca" type="text" placeholder="Buscar por nome...">
+                        <button class="btn" onclick="buscarProdutos()">Buscar</button>
+                        <button class="btn secondary" onclick="listarProdutos()">Listar Todos</button>
+                    </div>
+                    <div id="produtos-result" class="results">
+                        <div class="empty">Nenhum resultado.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="pedidos" class="section">
+            <div class="grid">
+                <div class="card">
+                    <h2>Criar Pedido</h2>
+                    <div id="pedido-msg"></div>
+                    <label>ID do Cliente</label>
+                    <input id="ped-cliente" type="number" placeholder="ID do cliente">
+                    <label>Data do Pedido</label>
+                    <input id="ped-data" type="date">
+                    <label>Itens do Pedido</label>
+                    <div id="items-container"></div>
+                    <button class="btn secondary" onclick="addItem()">+ Adicionar Produto</button>
+                    <br><br>
+                    <button class="btn success" onclick="criarPedido()">Criar Pedido</button>
+                </div>
+                <div class="card">
+                    <h2>Listar Pedidos</h2>
+                    <div class="search-row">
+                        <button class="btn" onclick="listarPedidos()">Todos os Pedidos</button>
+                    </div>
+                    <br>
+                    <label>Buscar por ID</label>
+                    <div class="search-row">
+                        <input id="ped-id" type="number" placeholder="ID do pedido">
+                        <button class="btn" onclick="buscarPedidoId()">Buscar</button>
+                    </div>
+                    <div id="pedidos-result" class="results">
+                        <div class="empty">Nenhum resultado.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="consultas" class="section">
+            <div class="grid">
+                <div class="card">
+                    <h2>Pedidos por Cliente</h2>
+                    <label>ID do Cliente</label>
+                    <div class="search-row">
+                        <input id="q-cliente-id" type="number" placeholder="ID">
+                        <button class="btn" onclick="pedidosPorCliente()">Buscar</button>
+                    </div>
+                    <div id="q-cliente-result" class="results">
+                        <div class="empty">Nenhum resultado.</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Total de Pedidos por Cliente</h2>
+                    <label>ID do Cliente</label>
+                    <div class="search-row">
+                        <input id="q-total-id" type="number" placeholder="ID">
+                        <button class="btn" onclick="totalPorCliente()">Calcular</button>
+                    </div>
+                    <div id="q-total-result" class="results">
+                        <div class="empty">Informe o ID do cliente.</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Pedidos por Produto</h2>
+                    <label>ID do Produto</label>
+                    <div class="search-row">
+                        <input id="q-produto-id" type="number" placeholder="ID">
+                        <button class="btn" onclick="pedidosPorProduto()">Buscar</button>
+                    </div>
+                    <div id="q-produto-result" class="results">
+                        <div class="empty">Nenhum resultado.</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Pedidos por Período</h2>
+                    <label>Data Inicial</label>
+                    <input id="q-data-inicio" type="date">
+                    <label>Data Final</label>
+                    <input id="q-data-fim" type="date">
+                    <button class="btn" onclick="pedidosPorPeriodo()">Buscar</button>
+                    <div id="q-periodo-result" class="results">
+                        <div class="empty">Nenhum resultado.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const API = 'http://localhost:8080';
+
+        function showSection(name) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(name).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showMsg(id, text, type) {
+            const el = document.getElementById(id);
+            el.innerHTML = `<div class="msg ${type}">${text}</div>`;
+            setTimeout(() => { el.innerHTML = ''; }, 4000);
+        }
+
+        function renderCliente(c) {
+            return `<div class="result-item">
+            <strong>#${c.id} — ${c.nome}</strong><br>
+            <span>${c.email}</span> &nbsp; <span class="tag">Cadastro: ${c.dataCadastro}</span>
+        </div>`;
+        }
+
+        function renderProduto(p) {
+            return `<div class="result-item">
+            <strong>#${p.id} — ${p.nome}</strong><br>
+            <span class="tag green">R$ ${parseFloat(p.valor).toFixed(2)}</span>
+            <span class="tag yellow">Estoque: ${p.estoque}</span>
+            <span class="tag">Cadastro: ${p.dataCadastro}</span>
+        </div>`;
+        }
+
+        function renderPedido(p) {
+            const itens = (p.itens || []).map(i =>
+                `<div style="margin-left:1rem; font-size:0.8rem; color:#94a3b8;">
+                • ${i.produtoNome} | Qtd: ${i.quantidade} | Vlr: R$ ${parseFloat(i.valor).toFixed(2)}
+                ${i.desconto ? '| Desc: R$ ' + parseFloat(i.desconto).toFixed(2) : ''}
+                | Subtotal: R$ ${parseFloat(i.subtotal).toFixed(2)}
+            </div>`
+            ).join('');
+            return `<div class="result-item">
+            <strong>#${p.id}</strong> — Cliente: <strong>${p.clienteNome}</strong>
+            <span class="tag">Data: ${p.dataPedido}</span>
+            <span class="tag green">Total: R$ ${parseFloat(p.total).toFixed(2)}</span>
+            ${itens}
+        </div>`;
+        }
+
+        function renderPage(data, renderFn, resultId) {
+            const el = document.getElementById(resultId);
+            const content = data.content || (Array.isArray(data) ? data : [data]);
+            if (!content || content.length === 0) {
+                el.innerHTML = '<div class="empty">Nenhum resultado encontrado.</div>';
+            } else {
+                el.innerHTML = content.map(renderFn).join('');
+            }
+        }
+
+        async function apiCall(method, url, body) {
+            const opts = { method, headers: { 'Content-Type': 'application/json' } };
+            if (body) opts.body = JSON.stringify(body);
+            const res = await fetch(API + url, opts);
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ mensagem: 'Erro desconhecido' }));
+                throw new Error(err.mensagem || err.message || 'Erro na requisição');
+            }
+            if (res.status === 204) return null;
+            return res.json();
+        }
+
+        // ---- CLIENTES ----
+        async function salvarCliente() {
+            try {
+                const body = {
+                    nome: document.getElementById('c-nome').value,
+                    email: document.getElementById('c-email').value,
+                    dataCadastro: document.getElementById('c-data').value
+                };
+                await apiCall('POST', '/clientes', body);
+                showMsg('cliente-msg', 'Cliente cadastrado com sucesso!', 'success');
+            } catch (e) { showMsg('cliente-msg', e.message, 'error'); }
+        }
+
+        async function listarClientes() {
+            try {
+                const data = await apiCall('GET', '/clientes?size=50');
+                renderPage(data, renderCliente, 'clientes-result');
+            } catch (e) { document.getElementById('clientes-result').innerHTML = `<div class="empty">${e.message}</div>`; }
+        }
+
+        async function buscarClientes() {
+            const nome = document.getElementById('c-busca').value.trim();
+            if (!nome) return listarClientes();
+            try {
+                const data = await apiCall('GET', `/clientes/buscar?nome=${encodeURIComponent(nome)}&size=50`);
+                renderPage(data, renderCliente, 'clientes-result');
+            } catch (e) { document.getElementById('clientes-result').innerHTML = `<div class="empty">${e.message}</div>`; }
+        }
+
+        // ---- PRODUTOS ----
+        async function salvarProduto() {
+            try {
+                const body = {
+                    nome: document.getElementById('p-nome').value,
+                    valor: parseFloat(document.getElementById('p-valor').value),
+                    estoque: parseInt(document.getElementById('p-estoque').value),
+                    dataCadastro: document.getElementById('p-data').value
+                };
+                await apiCall('POST', '/produtos', body);
+                showMsg('produto-msg', 'Produto cadastrado com sucesso!', 'success');
+            } catch (e) { showMsg('produto-msg', e.message, 'error'); }
+        }
+
+        async function listarProdutos() {
+            try {
+                const data = await apiCall('GET', '/produtos?size=50');
+                renderPage(data, renderProduto, 'produtos-result');
+            } catch (e) { document.getElementById('produtos-result').innerHTML = `<div class="empty">${e.message}</div>`; }
+        }
+
+        async function buscarProdutos() {
+            const nome = document.getElementById('p-busca').value.trim();
+            if (!nome) return listarProdutos();
+            try {
+                const data = await apiCall('GET', `/produtos/buscar?nome=${encodeURIComponent(nome)}&size=50`);
+                renderPage(data, renderProduto, 'produtos-result');
+            } catch (e) { document.getElementById('produtos-result').innerHTML = `<div class="empty">${e.message}</div>`; }
+        }
+
+        // ---- PEDIDOS ----
+        let itemCount = 0;
+
+        function addItem() {
+            itemCount++;
+            const div = document.createElement('div');
+            div.className = 'item-row';
+            div.id = `item-${itemCount}`;
+            div.innerHTML = `
+            <input type="number" placeholder="ID Produto" id="item-prod-${itemCount}" min="1">
+            <input type="number" placeholder="Qtd" id="item-qtd-${itemCount}" min="1">
+            <input type="number" placeholder="Valor R$" id="item-val-${itemCount}" min="0.01" step="0.01">
+            <input type="number" placeholder="Desconto" id="item-desc-${itemCount}" min="0" step="0.01">
+            <button class="btn danger" onclick="removeItem(${itemCount})">✕</button>
+        `;
+            document.getElementById('items-container').appendChild(div);
+        }
+
+        function removeItem(id) {
+            const el = document.getElementById(`item-${id}`);
+            if (el) el.remove();
+        }
+
+        async function criarPedido() {
+            try {
+                const itens = [];
+                document.querySelectorAll('[id^="item-prod-"]').forEach(el => {
+                    const n = el.id.split('-').pop();
+                    itens.push({
+                        produtoId: parseInt(document.getElementById(`item-prod-${n}`).value),
+                        quantidade: parseInt(document.getElementById(`item-qtd-${n}`).value),
+                        valor: parseFloat(document.getElementById(`item-val-${n}`).value),
+                        desconto: parseFloat(document.getElementById(`item-desc-${n}`).value) || null
+                    });
+                });
+                const body = {
+                    clienteId: parseInt(document.getElementById('ped-cliente').value),
+                    dataPedido: document.getElementById('ped-data').value,
+                    itens
+                };
+                const result = await apiCall('POST', '/pedidos', body);
+                showMsg('pedido-msg', `Pedido #${result.id} criado! Total: R$ ${parseFloat(result.total).toFixed(2)}`, 'success');
+                document.getElementById('items-container').innerHTML = '';
+                itemCount = 0;
+            } catch (e) { showMsg('pedido-msg', e.message, 'error'); }
+        }
+
+        async function listarPedidos() {
+            try {
+                const data = await apiCall('GET', '/pedidos?size=50');
+                renderPage(data, renderPedido, 'pedidos-result');
+            } catch (e) { document.getElementById('pedidos-result').innerHTML = `<div class="empty">${e.message}</div>`; }
+        }
+
+        async function buscarPedidoId() {
+            const id = document.getElementById('ped-id').value;
+            if (!id) return;
+            try {
+                const data = await apiCall('GET', `/pedidos/${id}`);
+                document.getElementById('pedidos-result').innerHTML = renderPedido(data);
+            } catch (e) { document.getElementById('pedidos-result').innerHTML = `<div class="empty">${e.message}</div>`; }
+        }
+
+        // ---- CONSULTAS ----
+        async function pedidosPorCliente() {
+            const id = document.getElementById('q-cliente-id').value;
+            if (!id) return;
+            try {
+                const data = await apiCall('GET', `/pedidos/cliente/${id}?size=50`);
+                renderPage(data, renderPedido, 'q-cliente-result');
+            } catch (e) { document.getElementById('q-cliente-result').innerHTML = `<div class="empty">${e.message}</div>`; }
+        }
+
+        async function totalPorCliente() {
+            const id = document.getElementById('q-total-id').value;
+            if (!id) return;
+            try {
+                const total = await apiCall('GET', `/pedidos/cliente/${id}/total`);
+                document.getElementById('q-total-result').innerHTML =
+                    `<div style="text-align:center; padding:1rem;">
+                    <span class="total-badge">R$ ${parseFloat(total || 0).toFixed(2)}</span>
+                    <div style="color:#94a3b8; margin-top:0.5rem; font-size:0.85rem;">Total acumulado de pedidos</div>
+                </div>`;
+            } catch (e) { document.getElementById('q-total-result').innerHTML = `<div class="empty">${e.message}</div>`; }
+        }
+
+        async function pedidosPorProduto() {
+            const id = document.getElementById('q-produto-id').value;
+            if (!id) return;
+            try {
+                const data = await apiCall('GET', `/pedidos/produto/${id}?size=50`);
+                renderPage(data, renderPedido, 'q-produto-result');
+            } catch (e) { document.getElementById('q-produto-result').innerHTML = `<div class="empty">${e.message}</div>`; }
+        }
+
+        async function pedidosPorPeriodo() {
+            const di = document.getElementById('q-data-inicio').value;
+            const df = document.getElementById('q-data-fim').value;
+            if (!di || !df) return;
+            try {
+                const data = await apiCall('GET', `/pedidos/periodo?dataInicio=${di}&dataFim=${df}&size=50`);
+                renderPage(data, renderPedido, 'q-periodo-result');
+            } catch (e) { document.getElementById('q-periodo-result').innerHTML = `<div class="empty">${e.message}</div>`; }
+        }
+    </script>
+</body>
+
+</html>
