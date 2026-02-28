@@ -1,23 +1,33 @@
-- Sistema de Pedidos
+# Sistema de Pedidos
 
-API REST para gerenciamento de clientes, produtos e pedidos, desenvolvida como desafio técnico.
+API REST para gerenciamento de clientes, produtos e pedidos.
 
-- Tecnologias
+## Tecnologias
 
-Backend: Java 17, Spring Boot 3, Spring Data JPA
-Banco de Dados: MySQL
-Frontend: HTML5, CSS3, JavaScript puro
-Build: Maven
+- Backend: Java 17, Spring Boot 3, Spring Data JPA
+- Banco de Dados: MySQL 8
+- Frontend: HTML5, CSS3, JavaScript
+- Build: Maven
 
-- Pré-requisitos
+---
 
-- Java 17+
-- MySQL 8+
-- Maven 3.6+ (ou usar o wrapper incluso)
+## Como rodar
 
-- Configuração - Banco de dados
+### Opção 1 — Docker (recomendado)
 
-Execute os scripts abaixo no seu MySQL para criar o banco e as tabelas:
+> Essa é a forma mais simples. Sobe o banco e o backend com um único comando, sem precisar instalar o MySQL ou configurar credenciais na máquina.
+
+Requisito: ter o [Docker](https://www.docker.com/) e o Docker Compose instalados.
+
+```bash
+docker-compose up --build
+```
+
+### Opção 2 — Local
+
+Requisitos: Java 17+, MySQL 8+, Maven 3.6+
+
+1. Crie o banco de dados executando os scripts abaixo no MySQL:
 
 ```sql
 CREATE DATABASE projetost;
@@ -57,9 +67,7 @@ CREATE TABLE item_pedido (
 );
 ```
 
-### Credenciais
-
-Edite `src/main/resources/application.properties` com as suas credenciais:
+2. Edite o arquivo `src/main/resources/application.properties` com suas credenciais:
 
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/projetost
@@ -67,67 +75,56 @@ spring.datasource.username=SEU_USUARIO
 spring.datasource.password=SUA_SENHA
 ```
 
-## Como Rodar o Projeto (Recomendado)
+3. Rode a aplicação:
 
-Para facilitar a avaliação técnica, a aplicação foi dockerizada. Com isso, banco de dados e backend sobem com um único comando, sem precisar instalar MySQL ou configurar credenciais localmente na sua máquina.
-
-### Pré-requisitos para rodar via Docker:
-- [Docker](https://www.docker.com/) e [Docker Compose](https://docs.docker.com/compose/) instalados.
-
-### Passos:
-1. Abra o terminal na raiz do projeto.
-2. Execute o comando:
 ```bash
-docker-compose up --build
+./mvnw spring-boot:run
 ```
-Isso irá construir a imagem do backend e subir o contêiner do MySQL. O primeiro start pode demorar alguns minutos para baixar a imagem do MySQL e compilar o app via Maven.
 
-A API estará disponível em `http://localhost:8080`.
+---
 
-**Frontend**
+## Frontend
 
-Com os contêineres rodando, basta dar um duplo clique no arquivo `frontend/index.html` para abri-lo no seu navegador favorito. A interface está configurada para acessar a API na porta `8080`.
+Com a aplicação no ar, basta abrir o arquivo `frontend/index.html` no navegador. A interface já está configurada para acessar a API na porta `8080`.
+
+---
 
 ## Endpoints
 
-### Clientes `/clientes`
+### Clientes — `/clientes`
 
-| Método | Endpoint | Descrição |
-|---|---|---|
-| POST | `/clientes` | Cadastrar cliente |
-| GET | `/clientes` | Listar todos (paginado) |
-| GET | `/clientes/{id}` | Buscar por ID |
-| GET | `/clientes/buscar?nome=X` | Buscar por nome |
-| PUT | `/clientes/{id}` | Atualizar cliente |
-| DELETE | `/clientes/{id}` | Remover cliente |
+- `POST /clientes` — Cadastrar cliente
+- `GET /clientes` — Listar todos (paginado)
+- `GET /clientes/{id}` — Buscar por ID
+- `GET /clientes/buscar?nome=X` — Buscar por nome
+- `PUT /clientes/{id}` — Atualizar cliente
+- `DELETE /clientes/{id}` — Remover cliente
 
-### Produtos `/produtos`
+### Produtos — `/produtos`
 
-| Método | Endpoint | Descrição |
-|---|---|---|
-| POST | `/produtos` | Cadastrar produto |
-| GET | `/produtos` | Listar todos (paginado) |
-| GET | `/produtos/{id}` | Buscar por ID |
-| GET | `/produtos/buscar?nome=X` | Buscar por nome |
-| PUT | `/produtos/{id}` | Atualizar produto |
-| DELETE | `/produtos/{id}` | Remover produto |
+- `POST /produtos` — Cadastrar produto
+- `GET /produtos` — Listar todos (paginado)
+- `GET /produtos/{id}` — Buscar por ID
+- `GET /produtos/buscar?nome=X` — Buscar por nome
+- `PUT /produtos/{id}` — Atualizar produto
+- `DELETE /produtos/{id}` — Remover produto
 
-### Pedidos `/pedidos`
+### Pedidos — `/pedidos`
 
-| Método | Endpoint | Descrição |
-|---|---|---|
-| POST | `/pedidos` | Criar pedido (desconta estoque automaticamente) |
-| GET | `/pedidos` | Listar todos (paginado) |
-| GET | `/pedidos/{id}` | Buscar por ID |
-| GET | `/pedidos/cliente/{id}` | Pedidos de um cliente |
-| GET | `/pedidos/produto/{id}` | Pedidos que contêm um produto |
-| GET | `/pedidos/periodo?dataInicio=YYYY-MM-DD&dataFim=YYYY-MM-DD` | Pedidos por período |
-| GET | `/pedidos/cliente/{id}/total` | Valor total gasto pelo cliente |
-| DELETE | `/pedidos/{id}` | Remover pedido |
+- `POST /pedidos` — Criar pedido (desconta estoque automaticamente)
+- `GET /pedidos` — Listar todos (paginado)
+- `GET /pedidos/{id}` — Buscar por ID
+- `GET /pedidos/cliente/{id}` — Pedidos de um cliente
+- `GET /pedidos/produto/{id}` — Pedidos que contêm um produto
+- `GET /pedidos/periodo?dataInicio=YYYY-MM-DD&dataFim=YYYY-MM-DD` — Pedidos por período
+- `GET /pedidos/cliente/{id}/total` — Valor total gasto pelo cliente
+- `DELETE /pedidos/{id}` — Remover pedido
+
+---
 
 ## Exemplos de uso
 
-**Cadastrar cliente**
+Cadastrar cliente:
 ```json
 POST /clientes
 {
@@ -137,7 +134,7 @@ POST /clientes
 }
 ```
 
-**Cadastrar produto**
+Cadastrar produto:
 ```json
 POST /produtos
 {
@@ -148,7 +145,7 @@ POST /produtos
 }
 ```
 
-**Criar pedido**
+Criar pedido:
 ```json
 POST /pedidos
 {
