@@ -1,36 +1,47 @@
-# Sistema de Pedidos
+- **Tecnologias Utilizadas**
 
-API REST para gerenciamento de clientes, produtos e pedidos.
+Backend: Java 21, Spring Boot 3.4.3
+Persistencia: Spring Data JPA com Native Query
+Banco de Dados: MySQL 8.0
+Frontend: HTML5, CSS3 e JavaScript Puro (Vanilla JS)
+Containerizacao: Docker e Docker Compose
+Build Tool: Maven
 
-## Tecnologias
+- **Como Executar o Projeto**
 
-- Backend: Java 17, Spring Boot 3, Spring Data JPA
-- Banco de Dados: MySQL 8
-- Frontend: HTML5, CSS3, JavaScript
-- Build: Maven
+Opção 1 — Docker (Recomendado)
+
+Esta opção sobe automaticamente o banco de dados MySQL e a aplicação Java.
+
+1- Certifique-se de ter o **Docker Desktop** instalado e rodando.
+2- Na raiz do projeto, execute:
+
+docker compose up -d --build
+
+3- Aguarde a inicialização. A aplicação estará disponível em `http://localhost:8080`.
+4- Abra o arquivo `frontend/index.html` no seu navegador.
+
+Opção 2 — Execução Local
+
+1- Banco de Dados: Crie um schema chamado projetost no seu MySQL local.
+2- Scripts SQL: Execute o script de criacao de tabelas abaixo (o Spring tambem pode criar automaticamente via ddl-auto=update no application.properties).
+3- Configuracao: Ajuste as credenciais no arquivo src/main/resources/application.properties se necessario.
+4- Rodar App:
+
+./mvnw spring-boot:run
+
+5- Abra o frontend/index.html no navegador.
 
 ---
 
-## Como rodar
+- **Scripts de Criação (DDR)**
 
-### Opção 1 — Docker (recomendado)
+Caso deseje criar as tabelas manualmente:
 
-> Essa é a forma mais simples. Sobe o banco e o backend com um único comando, sem precisar instalar o MySQL ou configurar credenciais na máquina.
+CREATE DATABASE IF NOT EXISTS projetost;
+USE projetost;
 
-Requisito: ter o [Docker](https://www.docker.com/) e o Docker Compose instalados.
-
-```bash
-docker-compose up --build
-```
-
-### Opção 2 — Local
-
-Requisitos: Java 17+, MySQL 8+, Maven 3.6+
-
-1. Crie o banco de dados executando os scripts abaixo no MySQL:
-
-```sql
-CREATE DATABASE projetost;
+CREATE DATABASE IF NOT EXISTS projetost;
 USE projetost;
 
 CREATE TABLE cliente (
@@ -52,7 +63,7 @@ CREATE TABLE pedido (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_cliente INT NOT NULL,
     data_pedido DATE NOT NULL,
-    FOREIGN KEY (id_cliente) REFERENCES cliente(id)
+    CONSTRAINT fk_cliente FOREIGN KEY (id_cliente) REFERENCES cliente(id)
 );
 
 CREATE TABLE item_pedido (
@@ -62,102 +73,23 @@ CREATE TABLE item_pedido (
     valor DECIMAL(10,2) NOT NULL,
     quantidade INT NOT NULL,
     desconto DECIMAL(10,2),
-    FOREIGN KEY (id_pedido) REFERENCES pedido(id),
-    FOREIGN KEY (id_produto) REFERENCES produto(id)
+    CONSTRAINT fk_pedido FOREIGN KEY (id_pedido) REFERENCES pedido(id),
+    CONSTRAINT fk_produto FOREIGN KEY (id_produto) REFERENCES produto(id)
 );
-```
 
-2. Edite o arquivo `src/main/resources/application.properties` com suas credenciais:
+- **Decisões Técnicas e Justificativas**
 
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/projetost
-spring.datasource.username=SEU_USUARIO
-spring.datasource.password=SUA_SENHA
-```
+1- Arquitetura: Utilizado o padrao MVC (Model-View-Controller) com camada de Service para isolar as regras de negocio.
+2- DTOs (Java Records): Utilizei Java Records para os DTOs por serem imutaveis, concisos e ideais para transferencia de dados, aproveitando os recursos do Java 21.
+3- Consultas Nativas (Native Queries): Conforme exigido pelo desafio, as principais logicas de busca e relatorios nos Repositories utilizam @Query(nativeQuery = true), demonstrando dominio em manipulacao direta de SQL.
+4- Gestao de Estoque: A atualizacao do estoque e feita na camada de PedidoService dentro de uma transacao (@Transactional). Se houver falha em qualquer item do pedido ou estoque insuficiente, a operacao sofre rollback completo, garantindo integridade.
+5- Frontend Vanilla JS: Optei por nao usar frameworks pesados como React ou Angular para manter a simplicidade, focando em uma UI moderna e responsiva usando CSS puro.
+6- Tratamento de Erros: Implementado um GlobalExceptionHandler para retornar respostas padronizadas em JSON com mensagens claras para o usuario final.
 
-3. Rode a aplicação:
+- **Endpoints Principais**
 
-```bash
-./mvnw spring-boot:run
-```
-
----
-
-## Frontend
-
-Com a aplicação no ar, basta abrir o arquivo `frontend/index.html` no navegador. A interface já está configurada para acessar a API na porta `8080`.
-
----
-
-## Endpoints
-
-### Clientes — `/clientes`
-
-- `POST /clientes` — Cadastrar cliente
-- `GET /clientes` — Listar todos (paginado)
-- `GET /clientes/{id}` — Buscar por ID
-- `GET /clientes/buscar?nome=X` — Buscar por nome
-- `PUT /clientes/{id}` — Atualizar cliente
-- `DELETE /clientes/{id}` — Remover cliente
-
-### Produtos — `/produtos`
-
-- `POST /produtos` — Cadastrar produto
-- `GET /produtos` — Listar todos (paginado)
-- `GET /produtos/{id}` — Buscar por ID
-- `GET /produtos/buscar?nome=X` — Buscar por nome
-- `PUT /produtos/{id}` — Atualizar produto
-- `DELETE /produtos/{id}` — Remover produto
-
-### Pedidos — `/pedidos`
-
-- `POST /pedidos` — Criar pedido (desconta estoque automaticamente)
-- `GET /pedidos` — Listar todos (paginado)
-- `GET /pedidos/{id}` — Buscar por ID
-- `GET /pedidos/cliente/{id}` — Pedidos de um cliente
-- `GET /pedidos/produto/{id}` — Pedidos que contêm um produto
-- `GET /pedidos/periodo?dataInicio=YYYY-MM-DD&dataFim=YYYY-MM-DD` — Pedidos por período
-- `GET /pedidos/cliente/{id}/total` — Valor total gasto pelo cliente
-- `DELETE /pedidos/{id}` — Remover pedido
-
----
-
-## Exemplos de uso
-
-Cadastrar cliente:
-```json
-POST /clientes
-{
-  "nome": "João Silva",
-  "email": "joao@email.com",
-  "dataCadastro": "2026-01-15"
-}
-```
-
-Cadastrar produto:
-```json
-POST /produtos
-{
-  "nome": "Notebook Dell",
-  "valor": 3500.00,
-  "estoque": 10,
-  "dataCadastro": "2026-01-01"
-}
-```
-
-Criar pedido:
-```json
-POST /pedidos
-{
-  "clienteId": 1,
-  "dataPedido": "2026-02-26",
-  "itens": [
-    {
-      "produtoId": 1,
-      "valor": 3500.00,
-      "quantidade": 2,
-      "desconto": 100.00
-    }
-  ]
-}
-```
+GET /clientes - Listar e filtrar por nome.
+GET /produtos - Listar e consultar estoque.
+POST /pedidos - Criar pedido completo com multiplos itens.
+GET /pedidos/cliente/{id}/total - Consulta de valor acumulado por cliente.
+GET /pedidos/periodo - Filtro de pedidos por intervalo de datas.
