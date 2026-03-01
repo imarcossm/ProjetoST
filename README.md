@@ -32,9 +32,8 @@ Opção 2 — Execução Local
 
 5- Abra o frontend/index.html no navegador.
 
----
 
-- **Scripts de Criação (DDR)**
+- **Scripts de Criação (DDL)**
 
 Caso deseje criar as tabelas manualmente:
 
@@ -77,11 +76,11 @@ CREATE TABLE item_pedido (
     CONSTRAINT fk_produto FOREIGN KEY (id_produto) REFERENCES produto(id)
 );
 
-- **Decisões Técnicas e Justificativas**
+- **Observações**
 
 1- Arquitetura: Utilizado o padrao MVC (Model-View-Controller) com camada de Service para isolar as regras de negocio.
 2- DTOs (Java Records): Utilizei Java Records para os DTOs por serem imutaveis, concisos e ideais para transferencia de dados, aproveitando os recursos do Java 21.
-3- Consultas Nativas (Native Queries): Conforme exigido pelo desafio, as principais logicas de busca e relatorios nos Repositories utilizam @Query(nativeQuery = true), demonstrando dominio em manipulacao direta de SQL.
+3- Native Queries: As principais logicas de busca e relatorios nos Repositories utilizam @Query(nativeQuery = true), demonstrando dominio em manipulacao direta de SQL.
 4- Gestao de Estoque: A atualizacao do estoque e feita na camada de PedidoService dentro de uma transacao (@Transactional). Se houver falha em qualquer item do pedido ou estoque insuficiente, a operacao sofre rollback completo, garantindo integridade.
 5- Frontend Vanilla JS: Optei por nao usar frameworks pesados como React ou Angular para manter a simplicidade, focando em uma UI moderna e responsiva usando CSS puro.
 6- Tratamento de Erros: Implementado um GlobalExceptionHandler para retornar respostas padronizadas em JSON com mensagens claras para o usuario final.
